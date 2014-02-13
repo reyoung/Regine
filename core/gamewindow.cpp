@@ -2,13 +2,18 @@
 #include "rstorage.h"
 #include <QQuickView>
 #include <QtGui>
-//#include <QApplication>
+#include <QHash>
 
 class GameWindowPrivate{
 public:
     RStorage* storage;
     qreal logicalWidth;
     qreal logicalHeight;
+    int   tickTimerId;
+    int   fpsCnt;
+    int   fpsTimerId;
+    int   lastFps;
+    QHash<QObject*, int> mids;
 };
 
 
@@ -20,6 +25,10 @@ GameWindow::GameWindow(QQuickItem *parent) :
     m->logicalWidth = 360;
     zoomToSize(0);
     switchOrientation();
+    m->fpsCnt = 0;
+    m->lastFps = 0;
+    m->tickTimerId = startTimer(1000/59.0);
+    m->fpsTimerId = startTimer(1000);
 }
 
 RStorage *GameWindow::storage() const
@@ -145,6 +154,52 @@ void GameWindow::setLogicalSize(const QSizeF &sz)
     this->setLogicalWidth(sz.width());
     this->setLogicalHeight(sz.height());
     emit this->logicalSizeChanged(sz);
+}
+
+int GameWindow::fps() const
+{
+    return m->lastFps;
+}
+
+static inline void invokeTick(QObject* obj, GameWindowPrivate* m){
+    if(obj!=nullptr){
+        int mid = -1;
+        auto meta = obj->metaObject();
+        if(m->mids.contains(obj)){
+            mid = m->mids[obj];
+        } else {
+            for(int i=0;i<meta->methodCount();++i){
+                auto me = meta->method(i);
+                if(me.name()=="tick"){
+                    mid = i;
+                    break;
+                }
+            }
+            m->mids.insert(obj, mid);
+        }
+        if(mid != -1){
+            auto method = meta->method(mid);
+            method.invoke(obj);
+        }
+        auto children = obj->children();
+        for(auto t : children){
+            invokeTick(t,m);
+        }
+    }
+}
+
+
+void GameWindow::timerEvent(QTimerEvent * ev)
+{
+    if(ev->timerId() == m->tickTimerId){
+        ++m->fpsCnt;
+        invokeTick(this, m);
+    } else if(ev->timerId() == m->fpsTimerId){
+        m->lastFps  = m->fpsCnt;
+        m->fpsCnt = 0;
+        emit this->fpsChanged(m->lastFps);
+    }
+    QQuickItem::timerEvent(ev);
 }
 
 void GameWindow::zoomToSize(int id)

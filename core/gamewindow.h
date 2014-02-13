@@ -16,6 +16,7 @@ class GameWindow : public QQuickItem
     Q_PROPERTY(qreal logicalHeight READ logicalHeight WRITE setLogicalHeight NOTIFY logicalHeightChanged)
     Q_PROPERTY(qreal logicalWidth READ logicalWidth WRITE setLogicalWidth NOTIFY logicalWidthChanged)
     Q_PROPERTY(QSizeF logicalSize READ logicalSize WRITE setLogicalSize NOTIFY logicalSizeChanged)
+    Q_PROPERTY(int fps READ fps NOTIFY fpsChanged)
     Q_ENUMS(PlatformType)
 public:
     enum PlatformType{
@@ -51,6 +52,8 @@ public:
 
     void setLogicalSize(const QSizeF& sz);
 
+    int  fps()const;
+
 signals:
     void storageChanged(RStorage* );
     void fullscreenChanged(bool );
@@ -59,6 +62,10 @@ signals:
     void logicalWidthChanged(qreal lw);
     void logicalHeightChanged(qreal);
     void logicalSizeChanged(QSizeF);
+    void fpsChanged(int );
+protected:
+    virtual void timerEvent(QTimerEvent* );
+
 private:
     void zoomToSize(int id);
 private:
