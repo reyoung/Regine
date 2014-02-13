@@ -3,6 +3,7 @@
 
 #include <QQuickItem>
 
+
 class RStoragePrivate;
 class RStorage : public QQuickItem
 {
@@ -35,6 +36,9 @@ public:
 
     /// Clear All Keys in storage
     Q_INVOKABLE void clearAll();
+
+
+    virtual ~RStorage();
 signals:
     void databaseNameChanged(QString newName);
 private:

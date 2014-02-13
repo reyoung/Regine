@@ -9,4 +9,5 @@ void initRegine(const QString &orgname, const QString &appname)
     QCoreApplication::setApplicationName(appname);
 
     qmlRegisterType<RStorage>("Regine", 1,0,"RStorage");
+    qmlRegisterType<GameWindow>("Regine", 1,0,"GameWindow");
 }

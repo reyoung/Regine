@@ -6,15 +6,14 @@ public:
     QString databaseName;
 
     QSettings settings;
-    RStoragePrivate(){
-        databaseName = "storage.db";
-    }
 };
 
 
 RStorage::RStorage(QQuickItem *parent) :
     QQuickItem(parent),m(new RStoragePrivate)
 {
+    this->m->settings.beginGroup("tmp");
+    this->setDatabaseName("storage.db");
 }
 
 QString RStorage::databaseName() const
@@ -25,9 +24,9 @@ QString RStorage::databaseName() const
 void RStorage::setDatabaseName(const QString &name)
 {
     this->m->databaseName = name;
-    emit this->databaseNameChanged(name);
     m->settings.endGroup();
     m->settings.beginGroup(name);
+    emit this->databaseNameChanged(name);
 }
 
 
@@ -61,4 +60,12 @@ bool RStorage::clear(const QString &key)
 void RStorage::clearAll()
 {
     m->settings.remove("");
+}
+
+RStorage::~RStorage()
+{
+    if(m!=nullptr){
+        delete m;
+        m = nullptr;
+    }
 }

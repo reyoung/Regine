@@ -3,6 +3,7 @@
 
 
 #include "core/rstorage.h"
+#include "core/gamewindow.h"
 
 extern void initRegine(
         const QString& orgname,
